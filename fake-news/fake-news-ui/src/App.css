@@ -1,0 +1,38 @@
+/* Tailwind directives removed because they are not recognized by standard CSS processors */
+
+.App {
+  text-align: center;
+  margin-top: 50px;
+  font-family: Arial, sans-serif;
+}
+
+textarea {
+  font-size: 16px;
+  padding: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+}
+
+.real {
+  color: green;
+  font-weight: bold;
+}
+
+.fake {
+  color: red;
+  font-weight: bold;
+}
+
+.error {
+  color: crimson;
+  margin-top: 20px;
+}
