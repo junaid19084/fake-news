@@ -14,7 +14,10 @@ function App() {
 
     try {
       // Use the API_URL from environment variable or default to localhost
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+      // In production, use /api path which is handled by the Nginx ingress
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api' 
+        : (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000');
       const response = await axios.post(`${apiUrl}/predict`, { text });
       setResult(response.data);
     } catch (err) {

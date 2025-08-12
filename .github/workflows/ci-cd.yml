@@ -1,0 +1,63 @@
+name: Fake News CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build and push detector-ml
+      uses: docker/build-push-action@v4
+      with:
+        context: ./fake-news/detector-ml
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/fake-news-detector-ml:latest
+    
+    - name: Build and push fake-news-ui
+      uses: docker/build-push-action@v4
+      with:
+        context: ./fake-news/fake-news-ui
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/fake-news-ui:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v2
+      with:
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/mongodb-deployment.yaml
+        kubectl apply -f k8s/detector-ml-deployment.yaml
+        kubectl apply -f k8s/fake-news-ui-deployment.yaml
+        kubectl apply -f k8s/ingress.yaml
+        
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n fake-news
