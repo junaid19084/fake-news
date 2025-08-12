@@ -13,7 +13,9 @@ function App() {
     setResult(null);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/predict', { text });
+      // Use the API_URL from environment variable or default to localhost
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+      const response = await axios.post(`${apiUrl}/predict`, { text });
       setResult(response.data);
     } catch (err) {
       console.error(err);
